@@ -1,0 +1,949 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>告解室 · CONFESSION — 梦女多结局</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%230a090d'/%3E%3Ccircle cx='16' cy='13' r='7' fill='none' stroke='%23a62639' stroke-width='2.4'/%3E%3Ccircle cx='16' cy='13' r='3' fill='%23a62639'/%3E%3Cpath d='M16 16v8' stroke='%23a62639' stroke-width='2.4' stroke-linecap='round'/%3E%3Cpath d='M11.5 25h9' stroke='%23a62639' stroke-width='2.4' stroke-linecap='round'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://miaoda.feishu.cn">
+<link href="https://miaoda.feishu.cn/fonts/css2?family=Noto+Serif+SC:wght@400;500;600;700;900&family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0a090d;
+  --bg2:#110e18;
+  --panel:#120f19;
+  --ink:#e8e2d5;
+  --ink-dim:#99919f;
+  --ink-faint:#585161;
+  --accent:#a62639;
+  --accent-hi:#ce4a5a;
+  --accent-dim:#6d1a24;
+  --gold:#b08d5e;
+  --line:rgba(232,226,213,.13);
+  --line-soft:rgba(232,226,213,.07);
+  --serif:"Noto Serif SC","Songti SC","STSong","SimSun",serif;
+  --sans:"Noto Sans SC","PingFang SC","Microsoft YaHei",sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{
+  background:var(--bg);
+  color:var(--ink);
+  font-family:var(--sans);
+  font-weight:300;
+  font-size:15px;
+  line-height:1.8;
+  -webkit-font-smoothing:antialiased;
+}
+::selection{background:var(--accent-dim);color:#fff}
+
+/* ===== 氛围层 ===== */
+.grain{
+  position:fixed;inset:0;z-index:0;pointer-events:none;opacity:.05;mix-blend-mode:overlay;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)' opacity='0.55'/%3E%3C/svg%3E");
+}
+.vignette{
+  position:fixed;inset:0;z-index:0;pointer-events:none;
+  background:radial-gradient(120% 90% at 50% 40%,transparent 52%,rgba(0,0,0,.55) 100%);
+}
+
+main{
+  position:relative;z-index:1;
+  min-height:100vh;display:flex;align-items:center;justify-content:center;
+  padding:28px 20px;
+}
+.stage{width:min(100%,560px)}
+
+/* ===== 视图切换 ===== */
+.view{display:none}
+.view.is-active{display:block;animation:rise .55s ease-out both}
+@keyframes rise{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+
+/* ===== 通用排版 ===== */
+.serif{font-family:var(--serif)}
+.eyebrow{
+  font-family:var(--sans);font-size:11px;letter-spacing:.42em;color:var(--ink-faint);
+  text-transform:uppercase;font-weight:500;
+}
+.h-title{
+  font-family:var(--serif);font-weight:900;
+  font-size:clamp(34px,9vw,52px);letter-spacing:.08em;color:var(--ink);
+  line-height:1.25;
+}
+.h-sub{margin-top:6px;font-size:clamp(15px,4vw,18px);color:var(--ink-dim);letter-spacing:.3em}
+.rule{display:flex;align-items:center;gap:14px;margin:26px auto;max-width:420px}
+.rule::before,.rule::after{content:"";flex:1;height:1px;background:linear-gradient(90deg,transparent,var(--line),transparent)}
+.rule svg{flex:none}
+.copy{color:var(--ink-dim);font-size:14.5px}
+.copy strong{color:var(--ink);font-weight:500}
+.note{color:var(--ink-faint);font-size:12.5px;letter-spacing:.06em}
+
+/* ===== 按钮 ===== */
+.btn{
+  appearance:none;border:1px solid var(--line);background:rgba(255,255,255,.015);
+  color:var(--ink);font-family:var(--serif);font-size:15px;letter-spacing:.34em;
+  padding:15px 40px;cursor:pointer;border-radius:2px;
+  transition:border-color .25s,color .25s,background .25s;
+}
+.btn:hover,.btn:focus-visible{border-color:var(--accent);color:var(--accent-hi);outline:none}
+.btn:active{transform:translateY(1px)}
+.btn-ghost{border-color:var(--line-soft);color:var(--ink-dim)}
+.btn-ghost:hover{border-color:var(--gold);color:var(--gold)}
+.btn[disabled]{opacity:.45;cursor:default}
+.btn-row{display:flex;flex-wrap:wrap;gap:12px;justify-content:center}
+
+/* ===== 声音开关 ===== */
+.sound-toggle{
+  position:fixed;top:16px;right:16px;z-index:5;
+  width:42px;height:42px;display:flex;align-items:center;justify-content:center;
+  border:1px solid var(--line-soft);background:rgba(10,9,13,.55);border-radius:50%;
+  color:var(--ink-faint);cursor:pointer;transition:border-color .25s,color .25s;
+}
+.sound-toggle:hover,.sound-toggle:focus-visible{border-color:var(--gold);color:var(--gold);outline:none}
+.sound-toggle.on{color:var(--accent-hi);border-color:var(--accent-dim)}
+.sound-toggle svg.on{display:none}
+.sound-toggle.on svg.on{display:block}
+.sound-toggle svg.off{display:block}
+.sound-toggle.on svg.off{display:none}
+
+/* ===== 开场视图 ===== */
+#v-start{text-align:center;padding:40px 0}
+.candle{display:block;margin:34px auto 0}
+
+/* ===== 称呼视图 ===== */
+#v-name{text-align:center;padding:30px 0}
+.name-field{max-width:340px;margin:30px auto 18px}
+.name-field input{
+  width:100%;background:transparent;border:0;border-bottom:1px solid var(--line);
+  color:var(--ink);font-family:var(--serif);font-size:22px;letter-spacing:.12em;
+  text-align:center;padding:12px 4px;caret-color:var(--accent);border-radius:0;
+}
+.name-field input:focus{outline:none;border-bottom-color:var(--accent)}
+.name-field input::placeholder{color:var(--ink-faint);font-size:16px;letter-spacing:.05em}
+.shake{animation:shake .4s}
+@keyframes shake{25%{transform:translateX(-6px)}50%{transform:translateX(6px)}75%{transform:translateX(-4px)}}
+.form-msg{height:22px;color:var(--accent-hi);font-size:13px;letter-spacing:.1em}
+
+/* ===== 问卷视图 ===== */
+#v-quiz{padding:26px 0 30px}
+.prog-head{display:flex;justify-content:space-between;align-items:baseline;color:var(--ink-faint);font-size:12px;letter-spacing:.28em}
+.prog-track{height:1px;background:var(--line-soft);margin:12px 0 30px;position:relative;overflow:hidden}
+.prog-fill{position:absolute;inset:0 auto 0 0;width:0%;background:var(--accent);transition:width .45s ease}
+.q-note{margin-bottom:26px;text-align:center;color:var(--ink-faint);font-size:12.5px;letter-spacing:.1em}
+.q-text{
+  font-family:var(--serif);font-size:clamp(19px,5.4vw,23px);font-weight:600;
+  line-height:1.7;margin-bottom:26px;color:var(--ink);
+}
+.opt{
+  display:block;width:100%;text-align:left;
+  border:1px solid var(--line-soft);background:rgba(255,255,255,.015);
+  color:var(--ink-dim);font-family:var(--sans);font-weight:300;
+  font-size:14.5px;line-height:1.7;padding:15px 18px;margin:10px 0;cursor:pointer;
+  border-radius:2px;transition:border-color .22s,color .22s,background .22s,transform .15s;
+}
+.opt::before{content:"";display:inline-block;width:7px;height:7px;background:var(--accent-dim);margin-right:14px;vertical-align:2px;flex:none;transition:background .22s}
+.opt:hover{border-color:var(--accent);color:var(--ink);background:rgba(166,38,57,.07);transform:translateX(3px)}
+.opt:hover::before{background:var(--accent)}
+.opt:focus-visible{outline:1px solid var(--accent);outline-offset:2px;color:var(--ink)}
+
+/* ===== 告解室视图 ===== */
+#v-reveal{text-align:center;padding:40px 0}
+.door{display:block;margin:34px auto 6px;cursor:pointer}
+.door .glow{transition:opacity .6s}
+.door:hover .glow,.door:focus-visible .glow{opacity:1}
+.door.hot .glow{animation:breathe 2.4s ease-in-out infinite}
+@keyframes breathe{0%,100%{opacity:.25}50%{opacity:1}}
+.reveal-msg{margin-top:22px;color:var(--ink-faint);font-size:13px;letter-spacing:.14em;min-height:22px}
+
+/* ===== 结局视图 ===== */
+#v-ending{padding:30px 0 40px;text-align:center}
+.end-head{display:flex;align-items:center;justify-content:center;gap:14px;margin-bottom:8px}
+.end-head .end-icon{color:var(--accent-hi)}
+.end-epithet{color:var(--gold);font-size:12.5px;letter-spacing:.34em;margin-bottom:18px}
+.end-title{
+  font-family:var(--serif);font-weight:900;font-size:clamp(30px,8vw,44px);
+  letter-spacing:.1em;color:var(--ink);line-height:1.3;
+}
+.scene{
+  border:1px solid var(--line-soft);background:var(--panel);
+  padding:26px 24px;margin:26px 0 0;text-align:left;border-radius:2px;min-height:230px;
+}
+.tline{margin-bottom:16px}
+.tline .who{
+  display:inline-block;font-size:11px;letter-spacing:.3em;color:var(--ink-faint);
+  margin-bottom:4px;border-bottom:1px solid var(--line-soft);padding-bottom:2px;
+}
+.tline .txt{font-family:var(--serif);font-size:15.5px;line-height:1.9;color:var(--ink)}
+.tline.n .txt{color:var(--ink-dim);font-family:var(--sans);font-size:14px}
+.tline.y .txt{color:var(--accent-hi)}
+.caret{display:inline-block;width:1px;height:1.05em;background:var(--accent);vertical-align:-2px;margin-left:3px;animation:blink 1s steps(1) infinite}
+@keyframes blink{50%{opacity:0}}
+.scene-foot{margin-top:20px;text-align:center}
+.scene-foot .btn{font-size:13px;padding:10px 28px}
+
+.epilogue{opacity:0;transition:opacity .8s ease;margin-top:30px}
+.epilogue.show{opacity:1}
+.epilogue p{
+  font-family:var(--serif);font-size:15.5px;line-height:2.05;color:var(--ink-dim);
+  max-width:440px;margin:0 auto;
+}
+.epilogue .seal{
+  width:52px;height:52px;border:1px solid var(--accent-dim);border-radius:50%;
+  display:flex;align-items:center;justify-content:center;margin:26px auto;
+  color:var(--accent-hi);
+}
+.unlock{margin-top:22px;opacity:0;transition:opacity .8s .2s}
+.unlock.show{opacity:1}
+.unlock-count{color:var(--ink-faint);font-size:12.5px;letter-spacing:.2em;margin-bottom:14px}
+.chips{display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
+.chip{
+  border:1px solid var(--line);background:rgba(255,255,255,.02);color:var(--ink-dim);
+  font-family:var(--serif);font-size:13px;letter-spacing:.14em;padding:6px 16px;
+  cursor:pointer;border-radius:2px;transition:border-color .2s,color .2s;
+}
+.chip:hover,.chip:focus-visible{border-color:var(--gold);color:var(--gold);outline:none}
+.actions{margin-top:30px;opacity:0;transition:opacity .8s .35s}
+.actions.show{opacity:1}
+
+/* ===== 结局图鉴 ===== */
+#v-gallery{text-align:center;padding:26px 0 30px}
+.gallery{display:grid;grid-template-columns:1fr;gap:12px;margin-top:26px;text-align:left}
+.gcard{border:1px solid var(--line-soft);background:var(--panel);border-radius:2px;padding:18px;transition:border-color .25s,opacity .25s}
+.gcard.locked{opacity:.6}
+.gcard.unlocked{border-color:rgba(176,141,94,.5);cursor:pointer}
+.gcard.unlocked:hover,.gcard.unlocked:focus-visible{border-color:var(--gold);outline:none}
+.gcard .g-top{display:flex;align-items:center;gap:12px}
+.gcard .g-icon{color:var(--ink-faint);flex:none}
+.gcard.unlocked .g-icon{color:var(--accent-hi)}
+.gcard .g-title{font-family:var(--serif);font-size:19px;font-weight:700;letter-spacing:.08em;color:var(--ink)}
+.gcard .g-epi{font-size:11px;letter-spacing:.24em;color:var(--gold);margin-top:2px}
+.gcard .g-tease{font-family:var(--serif);font-size:14px;color:var(--ink-dim);margin-top:12px;line-height:1.85}
+.gcard .g-hint{font-size:12px;color:var(--ink-faint);margin-top:10px;letter-spacing:.04em;border-top:1px solid var(--line-soft);padding-top:9px}
+.gcard.unlocked .g-hint::before{content:"已解锁 · 点击重看 · "}
+
+/* ===== 动画减弱 ===== */
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation:none!important;transition:none!important}
+  .grain{display:none}
+}
+
+/* ===== 宽屏微调 ===== */
+@media (min-width:768px){
+  body{font-size:16px}
+  .copy{font-size:15.5px}
+  .opt{font-size:15px;padding:16px 20px}
+}
+</style>
+</head>
+<body>
+<div class="grain" aria-hidden="true"></div>
+<div class="vignette" aria-hidden="true"></div>
+<button class="sound-toggle" id="btn-sound" type="button" aria-label="开启声音" aria-pressed="false">
+  <svg class="on" width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9H4z" fill="currentColor" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/><path d="M16 8.5c1.5 1.5 1.5 4.5 0 6M18.5 6c3 3 3 8 0 11" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+  <svg class="off" width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9H4z" fill="currentColor" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/><path d="M16 9l6 6M22 9l-6 6" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+</button>
+
+<main>
+  <div class="stage">
+
+    <!-- ===== 视图：开场 ===== -->
+    <section class="view is-active" id="v-start" data-view aria-labelledby="start-title">
+      <p class="eyebrow">Confession · 心理问卷</p>
+      <h1 class="h-title" id="start-title" style="margin-top:26px">告解室</h1>
+      <p class="h-sub">CONFESSION</p>
+      <div class="rule" aria-hidden="true">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 1l6 6-6 6-6-6z" stroke="#a62639" stroke-width="1"/><path d="M7 4.2L9.8 7 7 9.8 4.2 7z" fill="#a62639"/></svg>
+      </div>
+      <p class="copy" style="max-width:400px;margin:0 auto">在推开这扇门之前，<br>请先完成一份简短的心理问卷。</p>
+      <p class="copy" style="margin-top:14px">它会决定你遇见谁——<br>以及这一次，故事的结局。</p>
+      <p class="note" style="margin-top:18px">请诚实回答。没有正确答案。<br>我们不会评判你的选择。</p>
+      <p style="margin-top:36px"><button class="btn" id="btn-start" type="button">开&ensp;始</button></p>
+      <p style="margin-top:14px"><button class="btn btn-ghost" id="btn-gallery" type="button">结局图鉴</button></p>
+      <svg class="candle" width="26" height="46" viewBox="0 0 26 46" aria-hidden="true">
+        <g id="flameG" fill="none" stroke="#a62639" stroke-width="1.4">
+          <path d="M13 8c2.6 2.6 4 5 4 7.6a4 4 0 1 1-8 0C9 13 10.4 10.6 13 8z" fill="rgba(166,38,57,.25)" stroke="#ce4a5a"/>
+        </g>
+        <rect x="10.6" y="17" width="4.8" height="13" fill="rgba(232,226,213,.16)"/>
+        <rect x="8" y="29" width="10" height="15" fill="rgba(232,226,213,.08)"/>
+        <style>#flameG{transform-origin:13px 14px;animation:flame 2.6s ease-in-out infinite}@keyframes flame{0%,100%{transform:scale(1) rotate(0)}30%{transform:scale(1.08,.92) rotate(1.2deg)}65%{transform:scale(.94,1.06) rotate(-1.4deg)}}</style>
+      </svg>
+    </section>
+
+    <!-- ===== 视图：称呼 ===== -->
+    <section class="view" id="v-name" data-view aria-labelledby="name-title">
+      <p class="eyebrow">Step Ⅰ · 署名</p>
+      <h2 class="h-title" id="name-title" style="margin-top:22px;font-size:clamp(24px,7vw,34px)">请留下你的称呼</h2>
+      <div class="name-field" id="nameField">
+        <input id="name-input" type="text" maxlength="10" autocomplete="off"
+               placeholder="名字，或一句只有你懂的话" aria-label="你的称呼">
+      </div>
+      <p class="form-msg" id="form-msg" role="alert" aria-live="polite"></p>
+      <p class="note">告解者，请如实作答。</p>
+      <p style="margin-top:30px"><button class="btn" id="btn-name" type="button">进入告解</button></p>
+    </section>
+
+    <!-- ===== 视图：问卷 ===== -->
+    <section class="view" id="v-quiz" data-view aria-labelledby="quiz-title">
+      <div class="prog-head">
+        <span id="prog-cur">第 1 问</span>
+        <span id="prog-total">共 10 问</span>
+      </div>
+      <div class="prog-track" aria-hidden="true"><div class="prog-fill" id="prog-fill"></div></div>
+      <p class="q-note" id="quiz-note">请诚实回答 · 没有正确答案 · 我们不会评判你的选择</p>
+      <h2 class="q-text" id="q-text"></h2>
+      <div id="q-opts" role="group" aria-label="选项"></div>
+    </section>
+
+    <!-- ===== 视图：告解室 / 推门 ===== -->
+    <section class="view" id="v-reveal" data-view aria-labelledby="reveal-title">
+      <p class="eyebrow">Step Ⅱ · 评估</p>
+      <h2 class="h-title" id="reveal-title" style="margin-top:22px;font-size:clamp(26px,7vw,36px)">告解室</h2>
+      <div class="door hot" id="door" role="button" tabindex="0" aria-label="推门">
+        <svg width="150" height="190" viewBox="0 0 120 150" fill="none" aria-hidden="true">
+          <rect x="8" y="4" width="104" height="142" stroke="rgba(232,226,213,.22)" stroke-width="2"/>
+          <path d="M20 150V62a40 40 0 0 1 80 0v88" stroke="rgba(232,226,213,.34)" stroke-width="2"/>
+          <path d="M34 150V66a26 26 0 0 1 52 0v84" stroke="rgba(232,226,213,.15)" stroke-width="2"/>
+          <line x1="60" y1="18" x2="60" y2="150" stroke="rgba(232,226,213,.1)" stroke-width="2"/>
+          <circle cx="60" cy="74" r="10" stroke="rgba(232,226,213,.34)" stroke-width="2"/>
+          <circle cx="60" cy="74" r="3.6" fill="#a62639"/>
+          <path d="M60 84v22" stroke="rgba(232,226,213,.34)" stroke-width="2"/>
+          <line x1="50" y1="108" x2="70" y2="108" stroke="rgba(232,226,213,.34)" stroke-width="2"/>
+          <circle class="glow" cx="60" cy="74" r="17" fill="rgba(206,74,90,.16)" opacity=".25"/>
+        </svg>
+      </div>
+      <p class="reveal-msg" id="reveal-msg">灯火正为你而明</p>
+      <p style="margin-top:22px"><button class="btn" id="btn-door" type="button">推&ensp;门</button></p>
+    </section>
+
+    <!-- ===== 视图：结局 ===== -->
+    <section class="view" id="v-ending" data-view aria-labelledby="end-title">
+      <div class="end-head">
+        <span class="end-icon" id="end-icon" aria-hidden="true"></span>
+        <span class="eyebrow" id="end-eyebrow">告解结束</span>
+      </div>
+      <p class="end-epithet" id="end-epithet"></p>
+      <h2 class="end-title" id="end-title"></h2>
+      <div class="scene" aria-live="polite">
+        <div id="scene-lines"></div>
+        <div class="scene-foot"><button class="btn" id="btn-continue" type="button">继&ensp;续</button></div>
+      </div>
+      <div class="epilogue" id="epilogue">
+        <p id="epilogue-txt"></p>
+        <div class="seal" aria-hidden="true">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="10" r="5" stroke="currentColor" stroke-width="1.6"/><circle cx="12" cy="10" r="1.8" fill="currentColor"/><path d="M12 15v6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><path d="M8.5 22h7" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+        </div>
+      </div>
+      <div class="unlock" id="unlock">
+        <p class="unlock-count" id="unlock-count"></p>
+        <div class="chips" id="unlock-chips"></div>
+      </div>
+      <div class="actions" id="actions">
+        <div class="btn-row">
+          <button class="btn" id="btn-replay" type="button">再告解一次</button>
+          <button class="btn btn-ghost" id="btn-home" type="button">回到入口</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== 视图：结局图鉴 ===== -->
+    <section class="view" id="v-gallery" data-view aria-labelledby="gallery-title">
+      <p class="eyebrow">结局图鉴</p>
+      <h2 class="h-title" id="gallery-title" style="margin-top:22px;font-size:clamp(24px,7vw,34px)">五重结局</h2>
+      <p class="note" style="margin-top:12px">集齐五重结局，才算真正离开告解室。</p>
+      <div class="gallery" id="gallery-list"></div>
+      <p style="margin-top:30px;text-align:center"><button class="btn btn-ghost" id="btn-gallery-back" type="button">回到入口</button></p>
+    </section>
+
+  </div>
+</main>
+
+<script>
+(function(){
+"use strict";
+
+/* ===== 题库：前 8 问暗中判定男主，后 2 问判定真心值 ===== */
+var QUESTIONS=[
+ {q:"你推开告解室的门。烛火晃动的一瞬间，你最先看到的是——",opts:[
+   {t:"窗边一架落灰的旧钢琴，琴盖上刻着两个人小时候的名字",r:"mz"},
+   {t:"门后钉死的相框，玻璃裂了，照片上却是两个人",r:"gg"},
+   {t:"地板上滚着一颗棒球，和两双并排放着的球鞋",r:"dn"},
+   {t:"桌上半凉的咖啡，和一份没签完字的调令",r:"ss"}]},
+ {q:"如果告解室里有一段童年，它会是什么味道？",opts:[
+   {t:"夏天傍晚的风，混着冰淇淋和蝉鸣",r:"mz"},
+   {t:"深夜的楼道，和一句压低声音的“别怕，有哥在”",r:"gg"},
+   {t:"校门口等他放学的燥热，和一颗递过来的糖",r:"dn"},
+   {t:"第一次实习时，办公区飘着的廉价咖啡味",r:"ss"}]},
+ {q:"他若罚你，你希望是哪种？",opts:[
+   {t:"罚你陪他把那首旧曲子练完，错一个音就重来",r:"mz"},
+   {t:"罚你面壁，他却在你身后站了整整一小时",r:"gg"},
+   {t:"罚你当一天“专属姐姐”，他做什么都缠着你",r:"dn"},
+   {t:"罚你加班，结果他点了一桌夜宵放在你桌上",r:"ss"}]},
+ {q:"你更贪哪一种被爱？",opts:[
+   {t:"他记得你的一切喜好，熟悉得像呼吸",r:"mz"},
+   {t:"明知不该，他仍把你圈进怀里",r:"gg"},
+   {t:"他对全世界大声说“她是我的人”",r:"dn"},
+   {t:"他嘴上说“别误会”，动作却一寸寸靠近",r:"ss"}]},
+ {q:"夜深人静时，你反复想起的是——",opts:[
+   {t:"并排骑的自行车，和后座那只总替你抓稳的手",r:"mz"},
+   {t:"深夜他递来的温水，和你硬撑着不肯承认的眼泪",r:"gg"},
+   {t:"他困得靠在你肩头，含糊地喊“姐姐”",r:"dn"},
+   {t:"他加班到很晚，却把外套轻轻披回你肩上",r:"ss"}]},
+ {q:"如果只许你说一句话给他，你会说——",opts:[
+   {t:"“我回来了。这次，不走了。”",r:"mz"},
+   {t:"“我早就不把你当哥哥了。”",r:"gg"},
+   {t:"“别再叫姐姐了——叫我的名字。”",r:"dn"},
+   {t:"“你办公室的门，我以后不敲了，直接进。”",r:"ss"}]},
+ {q:"你最想和他共度怎样的夜晚？",opts:[
+   {t:"并肩坐在屋顶，看一整夜不肯散的星星",r:"mz"},
+   {t:"他攥住你的手腕，带你穿过人群逃进黑暗",r:"gg"},
+   {t:"他拉你坐在路边摊，把所有好吃的都推给你",r:"dn"},
+   {t:"他假装漫不经心，把西装外套搭在你膝上",r:"ss"}]},
+ {q:"他若喝醉了，你猜他会——",opts:[
+   {t:"安安静静靠着你，说些不成句的胡话",r:"mz"},
+   {t:"攥着你的手腕，红着眼问“你为什么要躲我”",r:"gg"},
+   {t:"抱着你不肯松手，把真心话全说出来",r:"dn"},
+   {t:"清醒得像没喝过，只有耳尖红得发烫",r:"ss"}]},
+ {q:"门只开一次。跨进去之前，你最后想的是——",opts:[
+   {t:"若被他听见也没关系。我的心，早就藏不住了",tr:2},
+   {t:"先看看他在不在。不在的话，就说给自己听",tr:0},
+   {t:"选一个最能让他记住我的回答",tr:1},
+   {t:"我没什么好告解的。我只是，想见他",tr:1}]},
+ {q:"最后一问。如果这份答卷决定你们的结局，你会——",opts:[
+   {t:"每一题都写真心。输赢，我都认",tr:2},
+   {t:"一半真心，一半技巧。我想赢",tr:0},
+   {t:"把最好的一面给他。哪怕那不是全部的我",tr:1},
+   {t:"在卷尾写下：你选我，我就选你",tr:2}]}
+];
+
+/* ===== 五重结局 ===== */
+var ENDINGS={
+ mz:{title:"岁岁常相见",epithet:"青梅未改 · 温柔竹马线",icon:"piano",
+  lines:[
+   {w:"n",s:"告解者「{name}」，推开了告解室的门。烛火晃动，窗边那架落灰的旧钢琴，不知何时被人擦净了。琴盖上，刻着你们幼时并排写下的名字。"},
+   {w:"h",s:"你问我忏悔什么？……我忏悔的是，等你这件事，我做了太久。久到差点以为，你不会回来了。"},
+   {w:"y",s:"我回来了。"},
+   {w:"h",s:"他低下头，笑了，像小时候那样，把手递到你面前。那这次……还走吗？"},
+   {w:"n",s:"琴键没有响。可你听见了——那是他等了很久很久的那句“不走了”。"}],
+  epilogue:"他没有说“爱”。他只是把余生的每个黄昏，都留给了那句“我回来了”。有些等待无需被原谅，因为等的人，终于到了。"},
+ gg:{title:"越界",epithet:"明知不可 · 伪骨科哥哥线",icon:"frame",
+  lines:[
+   {w:"n",s:"告解者「{name}」，推开了告解室的门。门后站着一个人，阴影吞掉他半张脸，只剩灯下那只手，骨节分明地抵着门框。"},
+   {w:"h",s:"叫了这么多年哥哥……今晚，想好要改口了吗？"},
+   {w:"y",s:"想好了。"},
+   {w:"h",s:"他忽然抬手，替你擦掉那滴没落下的泪。既然非要越界——那就越到底。别回头。"},
+   {w:"n",s:"他没有问后果。因为那道墙，本来就是他亲手拆的。"}],
+  epilogue:"全世界都说你们不该。只有你知道——他在告解室里忏悔的从来不是越界，而是没有更早，跨过那条线。"},
+ dn:{title:"只对你摇尾巴",epithet:"忠犬不装 · 年下小狗弟弟线",icon:"ball",
+  lines:[
+   {w:"n",s:"告解者「{name}」，推开了告解室的门。门缝里蹲着一只“湿漉漉的大型犬”——不对，是那个总笑得很好看的男孩。他抬眼看见你，眼睛瞬间亮成两盏小灯。"},
+   {w:"h",s:"姐姐……我装得很乖了。装到所有人都信了。"},
+   {w:"h",s:"只有你知道，我等这句“别叫我姐姐”……等了多久。"},
+   {w:"y",s:"乖。以后，不用装了。"},
+   {w:"h",s:"他把脸埋进你掌心，声音闷闷的：那说好了。你负责，收留我。"}],
+  epilogue:"他攒了那么多年的真心，谁都没给。全都留到今天，只摇给你一个人看。"},
+ ss:{title:"口是心非",epithet:"嘴硬心软 · 傲娇上司线",icon:"coffee",
+  lines:[
+   {w:"n",s:"告解者「{name}」，推开了告解室的门。里面竟摆着一张办公椅。他坐在上面，指尖敲着杯沿，抬眼时像在批一份年终报表。"},
+   {w:"h",s:"我没什么好忏悔的。"},
+   {w:"h",s:"……除了。你每次提离职，我都想留你。却只说了一句——再想想。"},
+   {w:"y",s:"那现在呢？"},
+   {w:"h",s:"他别开脸，耳尖却红得彻底。现在？现在你哪儿也别想去。"}],
+  epilogue:"他嘴里的每一句“别误会”，都是“我爱你”的另一种写法。这个人，连告解都要嘴硬。"},
+ secret:{title:"告解室的秘密",epithet:"四重轮回 · 隐藏真结局",icon:"star",
+  lines:[
+   {w:"n",s:"告解者「{name}」，推开了告解室的门。门开了。灯，忽然全亮了。"},
+   {w:"n",s:"你看见四个方向，各站着一个人——竹马、哥哥、弟弟、上司。他们同时抬头，望向你。"},
+   {w:"h",s:"欢迎回来。"},
+   {w:"n",s:"原来，这是一场只为你一个人准备的轮回。每一次作答，决定“这一次的他”以什么身份，再次爱上你；你交出的真心，决定这次故事的结局。"},
+   {w:"n",s:"这一次，你答得很诚实。灯，灭了。黑暗里传来一声轻笑——那，下个轮回见。"}],
+  epilogue:"忏悔，未完。你的答卷，永远有效。四位男主，五重结局——下一位梦女，请推门。"}
+};
+
+/* ===== 路线图标（内联 SVG） ===== */
+function iconSvg(k){
+  var c="currentColor";
+  if(k==="piano")return '<svg width="46" height="46" viewBox="0 0 64 64" fill="none" aria-hidden="true"><rect x="10" y="18" width="44" height="32" stroke="'+c+'" stroke-width="2"/><rect x="10" y="14" width="44" height="6" stroke="'+c+'" stroke-width="2"/><rect x="15" y="52" width="4" height="7" stroke="'+c+'" stroke-width="1.6"/><rect x="45" y="52" width="4" height="7" stroke="'+c+'" stroke-width="1.6"/><g stroke="rgba(176,141,94,.85)" stroke-width="1.5"><line x1="20" y1="42" x2="20" y2="50"/><line x1="27" y1="42" x2="27" y2="50"/><line x1="34" y1="42" x2="34" y2="50"/><line x1="41" y1="42" x2="41" y2="50"/><line x1="48" y1="42" x2="48" y2="50"/></g></svg>';
+  if(k==="frame")return '<svg width="46" height="46" viewBox="0 0 64 64" fill="none" aria-hidden="true"><rect x="15" y="11" width="34" height="42" stroke="'+c+'" stroke-width="2"/><rect x="21" y="17" width="22" height="30" stroke="rgba(232,226,213,.3)" stroke-width="1.4"/><path d="M22 50 L42 18" stroke="rgba(206,74,90,.9)" stroke-width="1.6"/><circle cx="26" cy="27" r="2" fill="rgba(206,74,90,.8)"/><circle cx="38" cy="40" r="2" fill="rgba(206,74,90,.8)"/></svg>';
+  if(k==="ball")return '<svg width="46" height="46" viewBox="0 0 64 64" fill="none" aria-hidden="true"><circle cx="32" cy="32" r="17" stroke="'+c+'" stroke-width="2"/><path d="M21 24c4.5-4 8.5-4 11 0s6.5 4 11 0" stroke="rgba(176,141,94,.85)" stroke-width="1.5"/><path d="M21 40c4.5 4 8.5 4 11 0s6.5-4 11 0" stroke="rgba(176,141,94,.85)" stroke-width="1.5"/><line x1="32" y1="15" x2="32" y2="49" stroke="rgba(232,226,213,.3)" stroke-width="1.4"/></svg>';
+  if(k==="coffee")return '<svg width="46" height="46" viewBox="0 0 64 64" fill="none" aria-hidden="true"><path d="M17 23h24v12a8 8 0 0 1-8 8h-8a8 8 0 0 1-8-8z" stroke="'+c+'" stroke-width="2"/><path d="M41 25h5a6 6 0 0 1 0 12h-6" stroke="'+c+'" stroke-width="2"/><line x1="13" y1="49" x2="45" y2="49" stroke="'+c+'" stroke-width="2"/><path d="M26 13c0-2 2.5-2 2.5-4.5M34 13c0-2 2.5-2 2.5-4.5" stroke="rgba(206,74,90,.75)" stroke-width="1.6" stroke-linecap="round"/></svg>';
+  if(k==="star")return '<svg width="46" height="46" viewBox="0 0 64 64" fill="none" aria-hidden="true"><path d="M32 5l6.5 20.5L59 32l-20.5 6.5L32 59l-6.5-20.5L5 32l20.5-6.5z" stroke="'+c+'" stroke-width="2" fill="rgba(206,74,90,.12)"/><circle cx="32" cy="32" r="5" fill="rgba(206,74,90,.55)"/></svg>';
+  return "";
+}
+
+/* ===== 状态与工具 ===== */
+var $=function(id){return document.getElementById(id)};
+var state={view:"start",name:"",idx:0,scores:{mz:0,gg:0,dn:0,ss:0},truth:0,route:"mz",timer:null};
+var UNLOCK_KEY="confession_unlocked_v1";
+function loadUnlocks(){try{var v=JSON.parse(localStorage.getItem(UNLOCK_KEY)||"[]");return Array.isArray(v)?v:[]}catch(e){return[]}}
+function saveUnlocks(list){try{localStorage.setItem(UNLOCK_KEY,JSON.stringify(list))}catch(e){}}
+function clearTimer(){clearTimeout(state.timer);clearTimeout(type.timer)}
+
+function showView(id){
+  document.querySelectorAll(".view").forEach(function(v){v.classList.remove("is-active")});
+  var el=$(id);el.classList.add("is-active");
+  state.view=id;
+  window.scrollTo(0,0);
+}
+
+/* ===== 开场 → 称呼 ===== */
+$("btn-start").addEventListener("click",function(){
+  showView("v-name");
+  setTimeout(function(){try{$("name-input").focus()}catch(e){}},140);
+});
+
+/* ===== 称呼 → 问卷 ===== */
+function submitName(){
+  var v=$("name-input").value.trim();
+  var field=$("nameField"),msg=$("form-msg");
+  if(!v){
+    field.classList.remove("shake");void field.offsetWidth;field.classList.add("shake");
+    msg.textContent="告解者，请先留下你的称呼。";
+    return;
+  }
+  msg.textContent="";
+  state.name=v;
+  beginQuiz();
+}
+$("btn-name").addEventListener("click",submitName);
+$("name-input").addEventListener("keydown",function(e){if(e.key==="Enter")submitName()});
+
+/* ===== 问卷流程 ===== */
+function beginQuiz(){
+  clearTimer();
+  state.idx=0;state.scores={mz:0,gg:0,dn:0,ss:0};state.truth=0;
+  renderQuestion();
+  showView("v-quiz");
+}
+function renderQuestion(){
+  var q=QUESTIONS[state.idx];
+  $("prog-cur").textContent="第 "+(state.idx+1)+" 问";
+  $("prog-total").textContent="共 "+QUESTIONS.length+" 问";
+  $("prog-fill").style.width=Math.round(state.idx/QUESTIONS.length*100)+"%";
+  $("q-text").textContent=q.q;
+  var box=$("q-opts");box.innerHTML="";
+  q.opts.forEach(function(o){
+    var b=document.createElement("button");
+    b.type="button";b.className="opt";
+    b.textContent=o.t;
+    b.addEventListener("click",function(){choose(o)});
+    box.appendChild(b);
+  });
+}
+function choose(o){
+  sndClick();
+  var opts=$("q-opts").children;
+  for(var i=0;i<opts.length;i++)opts[i].disabled=true;
+  if(o.r)state.scores[o.r]+=2;
+  if(o.tr)state.truth+=o.tr;
+  state.idx++;
+  clearTimeout(state.timer);
+  state.timer=setTimeout(function(){
+    if(state.idx<QUESTIONS.length){renderQuestion();return}
+    $("prog-fill").style.width="100%";
+    computeRoute();
+    enterReveal();
+  },260);
+}
+function computeRoute(){
+  var best="mz",bestV=-1;
+  ["mz","gg","dn","ss"].forEach(function(k){
+    if(state.scores[k]>bestV){bestV=state.scores[k];best=k}
+  });
+  state.route=(state.truth>=3)?"secret":best;
+}
+
+/* ===== 告解室 · 推门 ===== */
+function enterReveal(){
+  clearTimer();
+  $("reveal-msg").textContent="灯火正为你而明";
+  var door=$("door");door.classList.remove("hot");void door.offsetWidth;door.classList.add("hot");
+  $("btn-door").disabled=false;
+  showView("v-reveal");
+}
+function pushDoor(){
+  sndDoor();
+  var btn=$("btn-door");btn.disabled=true;
+  $("reveal-msg").textContent="灯，亮了……";
+  clearTimer();
+  state.timer=setTimeout(function(){showEnding(state.route)},1250);
+}
+$("btn-door").addEventListener("click",pushDoor);
+$("door").addEventListener("keydown",function(e){
+  if(e.key==="Enter"||e.key===" "){e.preventDefault();pushDoor()}
+});
+
+/* ===== 结局场景（打字机） ===== */
+var type={line:-1,timer:null,key:null,typing:false};
+function showEnding(key){
+  clearTimer();
+  var E=ENDINGS[key];
+  type.key=key;type.line=-1;type.typing=false;
+  $("end-eyebrow").textContent=(key==="secret")?"告解结束 · 真结局":"告解结束";
+  $("end-title").textContent=E.title;
+  $("end-epithet").textContent=E.epithet;
+  $("end-icon").innerHTML=iconSvg(E.icon);
+  $("epilogue").classList.remove("show");
+  $("unlock").classList.remove("show");
+  $("actions").classList.remove("show");
+  $("scene-lines").innerHTML="";
+  var cont=$("btn-continue");
+  cont.style.display="";cont.disabled=false;cont.textContent="继 续";
+  showView("v-ending");
+  nextLine();
+}
+function nextLine(){
+  var E=ENDINGS[type.key];
+  type.line++;
+  if(type.line>=E.lines.length){typeLineDone();return}
+  var L=E.lines[type.line];
+  var who=(L.w==="n")?"旁白":(L.w==="y")?(state.name||"你"):"他";
+  var div=document.createElement("div");
+  div.className="tline "+L.w;
+  div.innerHTML='<span class="who"></span><p class="txt"><span></span><span class="caret"></span></p>';
+  div.querySelector(".who").textContent=who;
+  $("scene-lines").appendChild(div);
+  var txtSpan=div.querySelector(".txt span");
+  var text=L.s.split("{name}").join(state.name||"你");
+  var i=0;type.typing=true;
+  (function step(){
+    if(i<text.length){
+      txtSpan.textContent=text.slice(0,i+1);i++;
+      if(SND.enabled)sndType();
+      type.timer=setTimeout(step,30);
+    }else{
+      type.typing=false;
+      div.querySelector(".caret").style.display="none";
+    }
+  })();
+}
+function typeLineDone(){
+  sndChime();
+  $("epilogue-txt").textContent=ENDINGS[type.key].epilogue;
+  $("epilogue").classList.add("show");
+  $("btn-continue").style.display="none";
+  registerUnlock(type.key);
+  renderUnlocks();
+  $("unlock").classList.add("show");
+  $("actions").classList.add("show");
+}
+$("btn-continue").addEventListener("click",function(){
+  if(type.typing){
+    clearTimeout(type.timer);
+    var L=ENDINGS[type.key].lines[type.line];
+    var div=$("scene-lines").lastElementChild;
+    div.querySelector(".txt span").textContent=L.s.split("{name}").join(state.name||"你");
+    div.querySelector(".caret").style.display="none";
+    type.typing=false;
+    return;
+  }
+  nextLine();
+});
+
+/* ===== 结局解锁 ===== */
+function registerUnlock(key){
+  var list=loadUnlocks();
+  if(list.indexOf(key)===-1){list.push(key);saveUnlocks(list)}
+}
+function renderUnlocks(){
+  var list=loadUnlocks();
+  $("unlock-count").textContent="已解锁结局 "+list.length+" / 5";
+  var box=$("unlock-chips");box.innerHTML="";
+  list.forEach(function(k){
+    var chip=document.createElement("button");
+    chip.type="button";chip.className="chip";
+    chip.textContent=ENDINGS[k].title;
+    chip.addEventListener("click",function(){showEnding(k)});
+    box.appendChild(chip);
+  });
+}
+
+/* ===== 结局图鉴 ===== */
+var TEASES={
+ mz:"他把等待熬成了习惯。等到你说那句“我回来了”。",
+ gg:"那道墙，是他亲手拆的。",
+ dn:"他攒了多年的真心，只摇给你一个人看。",
+ ss:"每一句“别误会”，都是另一种写法。",
+ secret:"原来，这场问卷本身，就是结局。"
+};
+var HINTS={
+ mz:"解锁：问卷中多数选择“旧时光 / 温柔”的方向",
+ gg:"解锁：问卷中多数选择“禁忌 / 守护”的方向",
+ dn:"解锁：问卷中多数选择“黏人 / 直球”的方向",
+ ss:"解锁：问卷中多数选择“别扭 / 口嫌体正直”的方向",
+ secret:"解锁：最后两问都交出真心（真心值 ≥ 3）"
+};
+function renderGallery(){
+  var list=loadUnlocks(),box=$("gallery-list");box.innerHTML="";
+  ["mz","gg","dn","ss","secret"].forEach(function(k){
+    var E=ENDINGS[k];
+    var unlocked=list.indexOf(k)>-1;
+    var card=document.createElement("div");
+    card.className="gcard "+(unlocked?"unlocked":"locked");
+    card.innerHTML='<div class="g-top"><span class="g-icon">'+iconSvg(E.icon)+'</span><div><div class="g-title">'+E.title+'</div><div class="g-epi">'+E.epithet+'</div></div></div><p class="g-tease">'+TEASES[k]+'</p><p class="g-hint">'+HINTS[k]+'</p>';
+    if(unlocked){
+      card.setAttribute("role","button");card.setAttribute("tabindex","0");
+      card.setAttribute("aria-label","重看结局："+E.title);
+      card.addEventListener("click",function(){showEnding(k)});
+      card.addEventListener("keydown",function(e){if(e.key==="Enter"||e.key===" "){e.preventDefault();showEnding(k)}});
+    }
+    box.appendChild(card);
+  });
+}
+$("btn-gallery").addEventListener("click",function(){renderGallery();showView("v-gallery")});
+$("btn-gallery-back").addEventListener("click",function(){showView("v-start")});
+
+/* ===== 声音系统（Web Audio 程序化音效，默认静音） ===== */
+var SND={
+  ctx:null,master:null,enabled:false,ambOn:false,ambBus:null,ambientNodes:[],
+  prefsKey:"confession_sound_v1"
+};
+function sndEnabledPref(){try{return localStorage.getItem(SND.prefsKey)==="1"}catch(e){return false}}
+function initAudio(){
+  if(SND.ctx)return;
+  try{
+    var AC=window.AudioContext||window.webkitAudioContext;
+    SND.ctx=new AC();
+    if(SND.ctx.state==="suspended")SND.ctx.resume();
+    SND.master=SND.ctx.createGain();
+    SND.master.gain.value=0.9;
+    SND.master.connect(SND.ctx.destination);
+    /* 音乐混音总线 + 空间延迟（教堂式回声） */
+    SND.musicBus=SND.ctx.createGain();
+    SND.musicBus.gain.value=0;
+    SND.musicBus.connect(SND.master);
+    SND.space=SND.ctx.createDelay(2.0);
+    SND.space.delayTime.value=0.42;
+    SND.dlp=SND.ctx.createBiquadFilter();SND.dlp.type="lowpass";SND.dlp.frequency.value=1400;
+    SND.fb=SND.ctx.createGain();SND.fb.gain.value=0.36;
+    SND.space.connect(SND.dlp);SND.dlp.connect(SND.fb);SND.fb.connect(SND.space);
+    SND.dlp.connect(SND.musicBus);
+  }catch(e){}
+}
+function startAmbient(){
+  if(!SND.ctx||SND.ambOn)return;
+  SND.ambOn=true;
+  var c=SND.ctx,t=c.currentTime;
+  var bus=c.createGain();
+  bus.gain.setValueAtTime(0.0001,t);
+  bus.gain.linearRampToValueAtTime(0.055,t+4);
+  bus.connect(SND.master);
+  SND.ambBus=bus;SND.ambientNodes=[];
+  [55,110.3,164.7].forEach(function(f,i){
+    var o=c.createOscillator();o.type="sine";o.frequency.value=f*(1+(i%2)*0.003);
+    var g=c.createGain();g.gain.value=(i===0?0.5:i===1?0.22:0.12);
+    var lp=c.createBiquadFilter();lp.type="lowpass";lp.frequency.value=170;
+    o.connect(g);g.connect(lp);lp.connect(bus);o.start();
+    SND.ambientNodes.push(o,g,lp);
+  });
+  var len=Math.floor(c.sampleRate*2),buf=c.createBuffer(1,len,c.sampleRate);
+  var d=buf.getChannelData(0);
+  for(var i=0;i<len;i++)d[i]=Math.random()*2-1;
+  var src=c.createBufferSource();src.buffer=buf;src.loop=true;
+  var nlp=c.createBiquadFilter();nlp.type="lowpass";nlp.frequency.value=130;
+  var ng=c.createGain();ng.gain.value=0.4;
+  src.connect(nlp);nlp.connect(ng);ng.connect(bus);src.start();
+  SND.ambientNodes.push(src,nlp,ng);
+  var lfo=c.createOscillator();lfo.frequency.value=0.07;
+  var lg=c.createGain();lg.gain.value=0.02;
+  lfo.connect(lg);lg.connect(bus.gain);lfo.start();
+  SND.ambientNodes.push(lfo,lg);
+}
+function stopAmbient(){
+  if(!SND.ambOn)return;
+  SND.ambOn=false;
+  try{
+    var c=SND.ctx,t=c.currentTime;
+    if(SND.ambBus){
+      SND.ambBus.gain.cancelScheduledValues(t);
+      SND.ambBus.gain.setValueAtTime(SND.ambBus.gain.value||0.055,t);
+      SND.ambBus.gain.exponentialRampToValueAtTime(0.0001,t+0.6);
+    }
+    var nodes=SND.ambientNodes.slice();
+    setTimeout(function(){
+      nodes.forEach(function(n){try{n.stop&&n.stop()}catch(e){}});
+    },700);
+  }catch(e){}
+  SND.ambientNodes=[];
+}
+function sndClick(){
+  if(!SND.enabled||!SND.ctx)return;
+  var c=SND.ctx,t=c.currentTime;
+  var o=c.createOscillator(),g=c.createGain();
+  o.type="triangle";
+  o.frequency.setValueAtTime(640,t);
+  o.frequency.exponentialRampToValueAtTime(460,t+0.06);
+  g.gain.setValueAtTime(0.0001,t);
+  g.gain.linearRampToValueAtTime(0.05,t+0.008);
+  g.gain.exponentialRampToValueAtTime(0.0001,t+0.09);
+  o.connect(g);g.connect(SND.master);o.start(t);o.stop(t+0.12);
+}
+function sndType(){
+  if(!SND.enabled||!SND.ctx)return;
+  var c=SND.ctx,t=c.currentTime;
+  var len=Math.floor(c.sampleRate*0.012),buf=c.createBuffer(1,len,c.sampleRate);
+  var d=buf.getChannelData(0);
+  for(var i=0;i<len;i++)d[i]=(Math.random()*2-1)*(1-i/len);
+  var src=c.createBufferSource();src.buffer=buf;
+  var bp=c.createBiquadFilter();bp.type="bandpass";bp.frequency.value=1700;bp.Q.value=1.2;
+  var g=c.createGain();g.gain.value=0.028;
+  src.connect(bp);bp.connect(g);g.connect(SND.master);src.start(t);
+}
+function sndDoor(){
+  if(!SND.enabled||!SND.ctx)return;
+  var c=SND.ctx,t=c.currentTime;
+  var len=Math.floor(c.sampleRate*1.4),buf=c.createBuffer(1,len,c.sampleRate);
+  var d=buf.getChannelData(0);
+  for(var i=0;i<len;i++)d[i]=(Math.random()*2-1)*(1-i/len);
+  var src=c.createBufferSource();src.buffer=buf;
+  var lp=c.createBiquadFilter();lp.type="lowpass";
+  lp.frequency.setValueAtTime(900,t);
+  lp.frequency.exponentialRampToValueAtTime(120,t+1.2);
+  var g=c.createGain();g.gain.setValueAtTime(0.0001,t);
+  g.gain.linearRampToValueAtTime(0.15,t+0.25);
+  g.gain.exponentialRampToValueAtTime(0.0001,t+1.35);
+  src.connect(lp);lp.connect(g);g.connect(SND.master);src.start(t);
+  var o=c.createOscillator();o.type="sine";
+  o.frequency.setValueAtTime(90,t);
+  o.frequency.exponentialRampToValueAtTime(48,t+0.7);
+  var g2=c.createGain();g2.gain.setValueAtTime(0.0001,t);
+  g2.gain.linearRampToValueAtTime(0.12,t+0.05);
+  g2.gain.exponentialRampToValueAtTime(0.0001,t+0.75);
+  o.connect(g2);g2.connect(SND.master);o.start(t);o.stop(t+0.8);
+}
+function sndChime(){
+  if(!SND.enabled||!SND.ctx)return;
+  var c=SND.ctx,t=c.currentTime;
+  [392,587,784].forEach(function(f,i){
+    var o=c.createOscillator();o.type="sine";o.frequency.value=f;
+    var g=c.createGain();
+    g.gain.setValueAtTime(0.0001,t+i*0.06);
+    g.gain.linearRampToValueAtTime(0.05,t+i*0.06+0.02);
+    g.gain.exponentialRampToValueAtTime(0.0001,t+i*0.06+1.1);
+    o.connect(g);g.connect(SND.master);o.start(t+i*0.06);o.stop(t+i*0.06+1.2);
+  });
+}
+function sndOnConfirm(){
+  if(!SND.ctx)return;
+  var c=SND.ctx,t=c.currentTime;
+  [523,659].forEach(function(f,i){
+    var o=c.createOscillator();o.type="sine";o.frequency.value=f;
+    var g=c.createGain();
+    g.gain.setValueAtTime(0.0001,t+i*0.05);
+    g.gain.linearRampToValueAtTime(0.045,t+i*0.05+0.015);
+    g.gain.exponentialRampToValueAtTime(0.0001,t+i*0.05+0.5);
+    o.connect(g);g.connect(SND.master);o.start(t+i*0.05);o.stop(t+i*0.05+0.6);
+  });
+}
+/* ===== 背景音乐：暗夜钢琴式氛围循环（程序化合成） ===== */
+var MUSIC={on:false,timer:null,step:0,barAt:0};
+function musicPluck(freq,t,dur,vel){
+  if(!SND.ctx||!SND.musicBus)return;
+  var c=SND.ctx;
+  var g=c.createGain();
+  g.gain.setValueAtTime(0.0001,t);
+  g.gain.linearRampToValueAtTime(vel,t+0.03);
+  g.gain.exponentialRampToValueAtTime(0.0001,t+dur);
+  var o=c.createOscillator();o.type="triangle";o.frequency.value=freq;
+  var o2=c.createOscillator();o2.type="sine";o2.frequency.value=freq*2;
+  var g2=c.createGain();g2.gain.value=0.35;
+  o.connect(g);o2.connect(g2);g2.connect(g);
+  var send=c.createGain();send.gain.value=0.22;
+  g.connect(SND.musicBus);g.connect(send);send.connect(SND.space);
+  o.start(t);o.stop(t+dur+0.05);o2.start(t);o2.stop(t+dur+0.05);
+}
+function musicBar(){
+  var chords=[
+    [110,164.81,261.63],
+    [87.31,130.81,220],
+    [130.81,196,329.63],
+    [98,146.83,246.94]
+  ];
+  var scale=[440,523.25,587.33,659.25,392];
+  var pats=[
+    [0,-1,1,-1],
+    [2,-1,0,1],
+    [1,3,-1,0],
+    [2,0,3,-1]
+  ];
+  var t=MUSIC.barAt;
+  var ch=chords[MUSIC.step%4];
+  var p=pats[MUSIC.step%4];
+  musicPluck(ch[0],t,2.2,0.09);
+  musicPluck(ch[1],t+1.05,1.8,0.06);
+  musicPluck(ch[2],t+1.95,1.4,0.05);
+  [0.42,1.24,2.05,2.78].forEach(function(at,i){
+    var si=p[i];
+    if(si===-1)return;
+    musicPluck(scale[si]*0.5,t+at,1.9,(si===1||si===2)?0.055:0.045);
+  });
+}
+function startMusic(){
+  if(!SND.ctx||MUSIC.on)return;
+  MUSIC.on=true;MUSIC.step=0;
+  var c=SND.ctx;
+  SND.musicBus.gain.cancelScheduledValues(c.currentTime);
+  SND.musicBus.gain.setValueAtTime(SND.musicBus.gain.value||0,c.currentTime);
+  SND.musicBus.gain.linearRampToValueAtTime(0.22,c.currentTime+1.6);
+  MUSIC.barAt=c.currentTime+0.25;
+  musicBar();
+  MUSIC.timer=setTimeout(stepMusic,120);
+  function stepMusic(){
+    if(!MUSIC.on)return;
+    MUSIC.step++;
+    MUSIC.barAt+=3.25;
+    musicBar();
+    MUSIC.timer=setTimeout(stepMusic,3160);
+  }
+}
+function stopMusic(){
+  if(!MUSIC.on)return;
+  MUSIC.on=false;
+  clearTimeout(MUSIC.timer);
+  if(SND.ctx){
+    var c=SND.ctx,t=c.currentTime;
+    SND.musicBus.gain.cancelScheduledValues(t);
+    SND.musicBus.gain.setValueAtTime(0.22,t);
+    SND.musicBus.gain.linearRampToValueAtTime(0.0001,t+1.2);
+  }
+}
+function updateSoundBtn(){
+  var b=$("btn-sound");
+  if(SND.enabled){
+    b.classList.add("on");b.setAttribute("aria-pressed","true");b.setAttribute("aria-label","关闭声音");
+  }else{
+    b.classList.remove("on");b.setAttribute("aria-pressed","false");b.setAttribute("aria-label","开启声音");
+  }
+}
+function sndToggle(){
+  initAudio();
+  if(SND.enabled){
+    stopAmbient();stopMusic();SND.enabled=false;
+  }else{
+    SND.enabled=true;startAmbient();startMusic();sndOnConfirm();
+  }
+  try{localStorage.setItem(SND.prefsKey,SND.enabled?"1":"0")}catch(e){}
+  updateSoundBtn();
+}
+SND.enabled=sndEnabledPref();
+updateSoundBtn();
+$("btn-sound").addEventListener("click",function(e){e.stopPropagation();sndToggle()});
+/* 记住过开启的用户：首次交互手势后恢复音频 */
+document.addEventListener("pointerdown",function once(){
+  initAudio();
+  if(sndEnabledPref()&&!SND.enabled){SND.enabled=true;updateSoundBtn();startAmbient();startMusic()}
+},{once:true});
+/* 常规按钮的轻点击音（选项、推门、声音开关除外，避免重复） */
+document.addEventListener("click",function(e){
+  if(!SND.enabled||!SND.ctx)return;
+  var b=e.target.closest("button");
+  if(!b||b.id==="btn-door"||b.id==="btn-sound"||b.classList.contains("opt"))return;
+  sndClick();
+});
+
+/* ===== 重来与返回 ===== */
+$("btn-replay").addEventListener("click",function(){beginQuiz()});
+$("btn-home").addEventListener("click",function(){showView("v-start")});
+})();
+</script>
+</body>
+</html>
